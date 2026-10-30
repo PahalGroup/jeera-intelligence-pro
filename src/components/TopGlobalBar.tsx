@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
 import { type UnitType, CROP_UNITS } from '../utils/units';
 import type { SuddenShockAlert } from '../services/scraper';
-import { RefreshCw, AlertTriangle, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, ExternalLink, Zap } from 'lucide-react';
+import {
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle2,
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Zap,
+  Sun,
+  Moon,
+} from 'lucide-react';
 
 interface TopGlobalBarProps {
   activeUnit: UnitType;
@@ -10,6 +21,8 @@ interface TopGlobalBarProps {
   onRefresh: () => void;
   lastRefreshed: string;
   alerts: SuddenShockAlert[];
+  isDarkMode: boolean;
+  onToggleTheme: () => void;
 }
 
 export const TopGlobalBar: React.FC<TopGlobalBarProps> = ({
@@ -19,6 +32,8 @@ export const TopGlobalBar: React.FC<TopGlobalBarProps> = ({
   onRefresh,
   lastRefreshed,
   alerts,
+  isDarkMode,
+  onToggleTheme,
 }) => {
   const [activeAlertIdx, setActiveAlertIdx] = useState(0);
   const [isAlertExpanded, setIsAlertExpanded] = useState(false);
@@ -28,47 +43,47 @@ export const TopGlobalBar: React.FC<TopGlobalBarProps> = ({
   const getSeverityBadge = (severity: SuddenShockAlert['severity']) => {
     switch (severity) {
       case 'GREEN':
-        return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40';
+        return 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30';
       case 'RED':
-        return 'bg-rose-500/20 text-rose-400 border-rose-500/40';
+        return 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30';
       case 'AMBER':
       default:
-        return 'bg-amber-500/20 text-amber-400 border-amber-500/40';
+        return 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30';
     }
   };
 
   const getSeverityIcon = (severity: SuddenShockAlert['severity']) => {
     switch (severity) {
       case 'GREEN':
-        return <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />;
+        return <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />;
       case 'RED':
-        return <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />;
+        return <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />;
       case 'AMBER':
       default:
-        return <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />;
+        return <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />;
     }
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800 shadow-xl">
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
       {/* 1. Main Header Strip */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-md shadow-amber-500/20 shrink-0">
             <span className="text-xl">🌿</span>
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <h1 className="text-sm sm:text-base font-bold text-white tracking-tight truncate">
+              <h1 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight truncate">
                 Jeera Intelligence Pro
               </h1>
-              <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-amber-500/20 text-amber-300 rounded border border-amber-500/30">
+              <span className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 rounded border border-amber-500/30">
                 HS 090931
               </span>
             </div>
-            <div className="flex items-center gap-2 text-[11px] text-slate-400">
-              <span className="flex items-center gap-1 text-emerald-400 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 Unjha APMC Live
               </span>
               <span>•</span>
@@ -78,23 +93,40 @@ export const TopGlobalBar: React.FC<TopGlobalBarProps> = ({
           </div>
         </div>
 
-        {/* Live Refresh Action */}
-        <button
-          onClick={onRefresh}
-          disabled={isRefreshing}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-xs font-medium text-slate-200 border border-slate-700 transition shadow-sm disabled:opacity-50 shrink-0"
-          title="Fetch latest weather and arrivals from all 18 official endpoints"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 text-amber-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-          <span className="hidden sm:inline">{isRefreshing ? 'Refreshing 18 Portals...' : 'Refresh All'}</span>
-          <span className="sm:hidden">{isRefreshing ? '...' : 'Sync'}</span>
-        </button>
+        {/* Actions: Theme Toggle & Live Refresh */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* Light / Dark Mode Toggle Button */}
+          <button
+            onClick={onToggleTheme}
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition active:scale-95"
+            title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            aria-label="Toggle Theme"
+          >
+            {isDarkMode ? (
+              <Sun className="w-4 h-4 text-amber-400 transition-transform rotate-0 hover:rotate-45" />
+            ) : (
+              <Moon className="w-4 h-4 text-indigo-600 transition-transform -rotate-12 hover:rotate-0" />
+            )}
+          </button>
+
+          {/* Refresh Action */}
+          <button
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 active:scale-95 text-xs font-semibold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition disabled:opacity-50"
+            title="Fetch latest weather and arrivals from all 18 official endpoints"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-amber-600 dark:text-amber-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">{isRefreshing ? 'Syncing 18 Portals...' : 'Refresh All'}</span>
+            <span className="sm:hidden">{isRefreshing ? '...' : 'Sync'}</span>
+          </button>
+        </div>
       </div>
 
       {/* 2. 1-Tap Unit Switcher Strip (Always Visible & Thumb-Friendly) */}
-      <div className="bg-slate-950/80 px-2 sm:px-4 py-1.5 border-t border-slate-800/60 overflow-x-auto no-scrollbar">
+      <div className="bg-slate-50 dark:bg-slate-950/80 px-2 sm:px-4 py-1.5 border-t border-slate-200 dark:border-slate-800/60 overflow-x-auto no-scrollbar">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-1 text-xs">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider shrink-0 mr-1 hidden sm:inline">
+          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0 mr-1 hidden sm:inline">
             Active Unit:
           </span>
           <div className="flex items-center gap-1 sm:gap-1.5 w-full sm:w-auto justify-start sm:justify-end">
@@ -105,14 +137,14 @@ export const TopGlobalBar: React.FC<TopGlobalBarProps> = ({
                 <button
                   key={unitKey}
                   onClick={() => onUnitChange(unitKey)}
-                  className={`flex-1 sm:flex-initial px-2 sm:px-3 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-all duration-150 flex flex-col sm:flex-row items-center gap-0 sm:gap-1 ${
+                  className={`flex-1 sm:flex-initial px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition-all duration-150 flex flex-col sm:flex-row items-center gap-0 sm:gap-1 ${
                     isSelected
-                      ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-bold scale-[1.02]'
-                      : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 hover:text-white border border-slate-700/50'
+                      ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black scale-[1.02]'
+                      : 'bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50'
                   }`}
                 >
                   <span>{u.shortLabel}</span>
-                  <span className={`text-[9px] opacity-75 font-normal ${isSelected ? 'text-slate-950' : 'text-slate-400'}`}>
+                  <span className={`text-[9px] font-normal ${isSelected ? 'text-slate-950' : 'text-slate-500 dark:text-slate-400'}`}>
                     ({u.id === 'maund' ? '20kg' : u.id === 'bag' ? '55kg' : u.id === 'quintal' ? '100kg' : u.id === 'kg' ? '1kg' : 'FOB'})
                   </span>
                 </button>
@@ -125,8 +157,11 @@ export const TopGlobalBar: React.FC<TopGlobalBarProps> = ({
       {/* 3. Instant Sudden-Shock Alert Banner */}
       {currentAlert && (
         <div className={`px-3 sm:px-4 py-2 border-t text-xs transition-colors duration-200 ${
-          currentAlert.severity === 'GREEN' ? 'bg-emerald-950/50 border-emerald-900/60' :
-          currentAlert.severity === 'RED' ? 'bg-rose-950/50 border-rose-900/60' : 'bg-amber-950/50 border-amber-900/60'
+          currentAlert.severity === 'GREEN'
+            ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-900/60'
+            : currentAlert.severity === 'RED'
+            ? 'bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-900/60'
+            : 'bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-900/60'
         }`}>
           <div className="max-w-7xl mx-auto">
             <div className="flex items-start justify-between gap-2">
@@ -137,19 +172,19 @@ export const TopGlobalBar: React.FC<TopGlobalBarProps> = ({
                     <span className={`px-1.5 py-0.2 text-[10px] font-bold rounded uppercase border ${getSeverityBadge(currentAlert.severity)}`}>
                       {currentAlert.badgeText}
                     </span>
-                    <span className="text-[11px] text-slate-400">{currentAlert.timestamp}</span>
-                    <div className="flex items-center gap-1 ml-auto sm:ml-0 text-[10px] text-slate-400">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">{currentAlert.timestamp}</span>
+                    <div className="flex items-center gap-1 ml-auto sm:ml-0 text-[10px] text-slate-500 dark:text-slate-400">
                       <span>Alert {activeAlertIdx + 1}/{alerts.length}</span>
                       <button
                         onClick={() => setActiveAlertIdx((prev) => (prev + 1) % alerts.length)}
-                        className="text-amber-400 hover:text-amber-300 underline font-semibold ml-1"
+                        className="text-amber-600 dark:text-amber-400 hover:underline font-bold ml-1"
                       >
                         Next &rarr;
                       </button>
                     </div>
                   </div>
                   
-                  <p className="font-semibold text-slate-100 text-xs sm:text-sm mt-0.5 leading-snug">
+                  <p className="font-bold text-slate-900 dark:text-slate-100 text-xs sm:text-sm mt-0.5 leading-snug">
                     {currentAlert.headline}
                   </p>
                 </div>
@@ -157,7 +192,7 @@ export const TopGlobalBar: React.FC<TopGlobalBarProps> = ({
 
               <button
                 onClick={() => setIsAlertExpanded(!isAlertExpanded)}
-                className="p-1 rounded text-slate-400 hover:text-white shrink-0 mt-0.5"
+                className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white shrink-0 mt-0.5"
                 title={isAlertExpanded ? 'Collapse explanation' : 'Explain Like I\'m 10'}
               >
                 {isAlertExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -166,31 +201,31 @@ export const TopGlobalBar: React.FC<TopGlobalBarProps> = ({
 
             {/* Expandable "Explain Like I'm 10" Card */}
             {isAlertExpanded && (
-              <div className="mt-2.5 pt-2 border-t border-slate-800/80 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                <div className="bg-slate-900/90 rounded-lg p-2.5 border border-slate-800">
-                  <div className="flex items-center gap-1.5 font-bold text-amber-300 mb-1">
-                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-800/80 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                <div className="bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-800 shadow-sm">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-300 mb-1">
+                    <Zap className="w-3.5 h-3.5 text-amber-500" />
                     <span>Explain Like I'm 10 (Simple English):</span>
                   </div>
-                  <p className="text-slate-300 leading-relaxed">
+                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
                     {currentAlert.plainEnglish10Yo}
                   </p>
                 </div>
 
-                <div className="bg-slate-900/90 rounded-lg p-2.5 border border-slate-800">
-                  <div className="flex items-center justify-between text-slate-400 font-semibold mb-1">
+                <div className="bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-800 shadow-sm">
+                  <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 font-bold mb-1">
                     <span>Technical & Commodity Desk Rationale:</span>
                     <a
                       href={currentAlert.sourceUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-amber-400 hover:underline flex items-center gap-1 text-[11px]"
+                      className="text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 text-[11px]"
                     >
                       <span>{currentAlert.sourcePortal}</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
-                  <p className="text-slate-300 leading-relaxed font-mono text-[11px]">
+                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-mono text-[11px]">
                     {currentAlert.technicalDetails}
                   </p>
                 </div>
