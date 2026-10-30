@@ -4,7 +4,6 @@ import { TopGlobalBar } from './components/TopGlobalBar';
 import { BottomNavBar, type AppTab } from './components/BottomNavBar';
 import { Tab1LiveCharts } from './components/Tab1LiveCharts';
 import { Tab2WeatherRadar } from './components/Tab2WeatherRadar';
-import { Tab3KiranaDurg } from './components/Tab3KiranaDurg';
 import { Tab4PortalsLedger } from './components/Tab4PortalsLedger';
 import { Tab5AgronomyBalanceSheet } from './components/Tab5AgronomyBalanceSheet';
 import { refreshAllData, type SuddenShockAlert } from './services/scraper';
@@ -19,6 +18,27 @@ export const App: React.FC = () => {
   );
   const [alerts, setAlerts] = useState<SuddenShockAlert[]>([]);
   const [districts, setDistricts] = useState<DistrictWeather[]>(getFallbackWeatherData());
+
+  // Dark & Light Mode state with persistence in localStorage
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('jeera_theme');
+    if (saved) return saved === 'dark';
+    return true; // default dark mode
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('jeera_theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('jeera_theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  const toggleTheme = () => {
+    setIsDarkMode((prev) => !prev);
+  };
 
   // Load live data on startup
   useEffect(() => {
@@ -40,8 +60,8 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-slate-950">
-      {/* Top Global Bar (1-Tap Unit Switcher, Shock Alert Banner, Live Status) */}
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-slate-950 transition-colors duration-200">
+      {/* Top Global Bar (1-Tap Unit Switcher, Theme Switcher, Shock Alert Banner, Live Status) */}
       <TopGlobalBar
         activeUnit={activeUnit}
         onUnitChange={setActiveUnit}
@@ -49,11 +69,15 @@ export const App: React.FC = () => {
         onRefresh={handleRefresh}
         lastRefreshed={lastRefreshed}
         alerts={alerts}
+        isDarkMode={isDarkMode}
+        onToggleTheme={toggleTheme}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 w-full">
-        {activeTab === 'charts' && <Tab1LiveCharts activeUnit={activeUnit} />}
+      {/* Main Content Area: 4 High-Value Intelligence Tabs */}
+      <main className="flex-1 w-full max-w-7xl mx-auto">
+        {activeTab === 'charts' && (
+          <Tab1LiveCharts activeUnit={activeUnit} isDarkMode={isDarkMode} />
+        )}
         {activeTab === 'weather' && (
           <Tab2WeatherRadar
             districts={districts}
@@ -61,9 +85,10 @@ export const App: React.FC = () => {
             onRefreshWeather={handleRefresh}
           />
         )}
-        {activeTab === 'kirana' && <Tab3KiranaDurg activeUnit={activeUnit} />}
         {activeTab === 'portals' && <Tab4PortalsLedger />}
-        {activeTab === 'agronomy' && <Tab5AgronomyBalanceSheet activeUnit={activeUnit} />}
+        {activeTab === 'agronomy' && (
+          <Tab5AgronomyBalanceSheet activeUnit={activeUnit} />
+        )}
       </main>
 
       {/* Bottom Thumb-Friendly Nav Bar */}
